@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Visa Eligibility Checker</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --primary-light: #93c5fd;
+      --success: #16a34a;
+      --warning: #eab308;
+      --danger: #dc2626;
+      --bg: #f0f9ff;
+      --text: #1e293b;
+      --card-bg: #ffffff;
+      --radius: 14px;
+      --shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
+      --transition: all 0.3s ease;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 2rem;
+      min-height: 100vh;
+      background-image: linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 100%);
+    }
+
+    .container {
+      max-width: 750px;
+      margin: 2rem auto;
+      background: var(--card-bg);
+      padding: 2.5rem;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .container::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 6px;
+      background: linear-gradient(90deg, var(--primary), #3b82f6, var(--primary));
+      z-index: 2;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+      position: relative;
+    }
+
+    h1 {
+      font-size: 2.2rem;
+      margin-bottom: 0.8rem;
+      color: var(--primary);
+      font-weight: 700;
+      position: relative;
+      display: inline-block;
+    }
+
+    h1::after {
+      content: "";
+      position: absolute;
+      bottom: -8px;
+      left: 25%;
+      width: 50%;
+      height: 4px;
+      background: linear-gradient(90deg, transparent, var(--primary), transparent);
+      border-radius: 2px;
+    }
+
+    .description {
+      color: #475569;
+      max-width: 600px;
+      margin: 0 auto 1.5rem;
+      font-size: 1.1rem;
+    }
+
+    .mandatory-note {
+      background: #fef3c7;
+      padding: 0.8rem 1.2rem;
+      border-radius: 8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-top: 1rem;
+      font-size: 0.95rem;
+      color: #854d0e;
+      border: 1px solid #fcd34d;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 2.2rem;
+    }
+
+    .question {
+      display: flex;
+      flex-direction: column;
+      background: #f8fafc;
+      padding: 1.8rem;
+      border-radius: var(--radius);
+      border: 1px solid #e2e8f0;
+      transition: var(--transition);
+      position: relative;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03);
+    }
+
+    .question.active {
+      border-color: var(--primary-light);
+      background: #f0f9ff;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.1);
+    }
+
+    .question label {
+      font-weight: 600;
+      margin-bottom: 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 1.15rem;
+      color: #1e293b;
+    }
+
+    .required-star {
+      color: var(--danger);
+      font-size: 1.3em;
+    }
+
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 0.7rem;
+    }
+
+    .options label {
+      padding: 1rem 1.2rem;
+      background: #eff6ff;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: var(--transition);
+      border: 1px solid #dbeafe;
+      font-weight: 500;
+      position: relative;
+      display: flex;
+      align-items: center;
+      margin-bottom: 0;
+      font-size: 1rem;
+      color: #334155;
+    }
+
+    .options label:hover {
+      background: #dbeafe;
+      border-color: var(--primary-light);
+      transform: translateY(-2px);
+    }
+
+    .options input[type="radio"]:checked + label {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+      box-shadow: 0 4px 8px rgba(37, 99, 235, 0.2);
+    }
+
+    .options input[type="radio"]:checked + label::after {
+      content: "\f00c";
+      font-family: "Font Awesome 6 Free";
+      font-weight: 900;
+      position: absolute;
+      right: 1.2rem;
+      font-size: 0.9rem;
+    }
+
+    input[type="radio"] {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .error-message {
+      color: var(--danger);
+      font-size: 0.9rem;
+      margin-top: 0.8rem;
+      display: none;
+      font-weight: 500;
+    }
+
+    .question.error .error-message {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .button-container {
+      display: flex;
+      justify-content: center;
+      margin-top: 1.2rem;
+    }
+
+    button {
+      padding: 1.1rem 2.5rem;
+      background-color: var(--primary);
+      color: white;
+      font-size: 1.1rem;
+      font-weight: 600;
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: var(--transition);
+      box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+    }
+
+    button:hover {
+      background-color: var(--primary-dark);
+      transform: translateY(-3px);
+      box-shadow: 0 6px 15px rgba(37, 99, 235, 0.4);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: rgba(0, 0, 0, 0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+      visibility: hidden;
+      opacity: 0;
+      transition: all 0.4s ease;
+    }
+
+    .modal.active {
+      visibility: visible;
+      opacity: 1;
+    }
+
+    .modal-content {
+      background-color: white;
+      padding: 2.8rem;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      max-width: 480px;
+      width: 90%;
+      text-align: center;
+      position: relative;
+      transform: translateY(30px);
+      transition: transform 0.4s ease;
+    }
+
+    .modal.active .modal-content {
+      transform: translateY(0);
+    }
+
+    .modal-title {
+      font-size: 1.8rem;
+      margin-bottom: 1.8rem;
+      color: var(--primary);
+      font-weight: 700;
+    }
+
+    .score-display {
+      font-size: 3.2rem;
+      font-weight: 800;
+      margin: 1.8rem 0;
+      background: linear-gradient(135deg, var(--primary), #3b82f6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      position: relative;
+      display: inline-block;
+    }
+
+    .result-message {
+      font-size: 1.25rem;
+      margin: 1.8rem 0;
+      padding: 1.2rem;
+      border-radius: var(--radius);
+      line-height: 1.7;
+    }
+
+    .excellent {
+      background-color: rgba(22, 163, 74, 0.1);
+      color: var(--success);
+      border: 1px solid var(--success);
+    }
+
+    .good {
+      background-color: rgba(234, 179, 8, 0.1);
+      color: var(--warning);
+      border: 1px solid var(--warning);
+    }
+
+    .moderate {
+      background-color: rgba(249, 115, 22, 0.1);
+      color: #f97316;
+      border: 1px solid #f97316;
+    }
+
+    .weak {
+      background-color: rgba(220, 38, 38, 0.1);
+      color: var(--danger);
+      border: 1px solid var(--danger);
+    }
+
+    .close-button {
+      padding: 0.9rem 1.8rem;
+      background-color: #f1f5f9;
+      color: #475569;
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      font-weight: 500;
+      transition: var(--transition);
+      margin-top: 1.8rem;
+      font-size: 1rem;
+    }
+
+    .close-button:hover {
+      background-color: #e2e8f0;
+      color: #1e293b;
+    }
+
+    .progress-container {
+      height: 10px;
+      background-color: #e2e8f0;
+      border-radius: 5px;
+      overflow: hidden;
+      margin: 1.8rem 0;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--danger), var(--warning), var(--success));
+      width: 0%;
+      transition: width 1s ease-in-out;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 2.5rem;
+      color: #64748b;
+      font-size: 0.95rem;
+      border-top: 1px solid #e2e8f0;
+      padding-top: 1.5rem;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .question {
+      animation: fadeIn 0.5s ease-out;
+      animation-fill-mode: both;
+    }
+
+    .question:nth-child(1) { animation-delay: 0.1s; }
+    .question:nth-child(2) { animation-delay: 0.2s; }
+    .question:nth-child(3) { animation-delay: 0.3s; }
+    .question:nth-child(4) { animation-delay: 0.4s; }
+    .question:nth-child(5) { animation-delay: 0.5s; }
+
+    .pulse {
+      animation: pulse 1.5s infinite;
+    }
+
+    @media (max-width: 768px) {
+      body {
+        padding: 1.2rem;
+      }
+      
+      .container {
+        padding: 1.8rem;
+      }
+      
+      .question {
+        padding: 1.4rem;
+      }
+      
+      .modal-content {
+        padding: 1.8rem;
+      }
+      
+      h1 {
+        font-size: 1.8rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .options label {
+        padding: 0.9rem;
+        font-size: 0.95rem;
+      }
+      
+      button {
+        padding: 1rem 1.8rem;
+        font-size: 1rem;
+      }
+    }
+
+    .text-input {
+      width: 100%;
+      padding: 1rem 1.2rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      font-size: 1rem;
+      transition: var(--transition);
+      background: #eff6ff;
+    }
+
+    .text-input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    .text-input::placeholder {
+      color: #94a3b8;
+    }
+
+    .text-input.error {
+      border-color: var(--danger);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1><img src="https://cdn.jsdelivr.net/gh/nbjat/others/Logo_New_MVP.png" alt="icon" style="height: 1.5em; vertical-align: middle; margin-right: 0.25em;"> Visa Eligibility Assessment</h1>
+      <p class="description">Answer all questions to evaluate your visa eligibility. Your responses will help calculate your approval probability.</p>
+      <div class="mandatory-note">
+        <i class="fas fa-exclamation-circle"></i>
+        <span>All questions are mandatory. Please answer each one.</span>
+      </div>
+    </div>
+    
+    <form id="eligibilityForm">
+      <div class="question" id="q0">
+        <label>
+          <span class="required-star">*</span>
+          Full Name
+        </label>
+        <input type="text" id="fullName" name="fullName" class="text-input" placeholder="Enter your full name" required>
+        <div class="error-message">
+          <i class="fas fa-exclamation-circle"></i>
+          Please enter your full name
+        </div>
+      </div>
+
+      <div class="question" id="q0-1">
+        <label>
+          <span class="required-star">*</span>
+          Phone Number
+        </label>
+        <input type="tel" id="phoneNumber" name="phoneNumber" class="text-input" placeholder="Enter your phone number (with or without country code)" required>
+        <div class="error-message">
+          <i class="fas fa-exclamation-circle"></i>
+          Please enter a valid 10-digit phone number
+        </div>
+        <small style="color: #64748b; margin-top: 0.5rem; display: block;">You can enter with country code (e.g., +91) or without it</small>
+      </div>
+
+      <div class="question" id="q1">
+        <label>
+          <span class="required-star">*</span>
+          1. Current Employment Status
+        </label>
+        <div class="options">
+          <input type="radio" id="emp1" name="employment" value="25">
+          <label for="emp1">Government employee with permanent position</label>
+          
+          <input type="radio" id="emp2" name="employment" value="25">
+          <label for="emp2">Senior position (5+ years) in an established company</label>
+          
+          <input type="radio" id="emp3" name="employment" value="25">
+          <label for="emp3">Business owner with a registered company (3+ years)</label>
+          
+          <input type="radio" id="emp4" name="employment" value="22">
+          <label for="emp4">Regular private sector employee</label>
+          
+          <input type="radio" id="emp5" name="employment" value="15">
+          <label for="emp5">Freelancer/Consultant with consistent income</label>
+          
+          <input type="radio" id="emp6" name="employment" value="8">
+          <label for="emp6">Student with financial backing</label>
+          
+          <input type="radio" id="emp7" name="employment" value="4">
+          <label for="emp7">Currently unemployed or between jobs</label>
+        </div>
+        <div class="error-message">
+          <i class="fas fa-exclamation-circle"></i>
+          Please select your employment status
+        </div>
+      </div>
+
+      <div class="question" id="q2">
+        <label>
+          <span class="required-star">*</span>
+          2. Monthly Income Range
+        </label>
+        <div class="options">
+          <input type="radio" id="inc1" name="income" value="20">
+          <label for="inc1">Above ₹1,00,000</label>
+          
+          <input type="radio" id="inc2" name="income" value="20">
+          <label for="inc2">₹50,000 – ₹1,00,000</label>
+          
+          <input type="radio" id="inc3" name="income" value="10">
+          <label for="inc3">₹25,000 – ₹50,000</label>
+          
+          <input type="radio" id="inc4" name="income" value="5">
+          <label for="inc4">₹15,000 – ₹25,000</label>
+          
+          <input type="radio" id="inc5" name="income" value="2">
+          <label for="inc5">Below ₹15,000</label>
+        </div>
+        <div class="error-message">
+          <i class="fas fa-exclamation-circle"></i>
+          Please select your income range
+        </div>
+      </div>
+
+      <div class="question" id="q3">
+        <label>
+          <span class="required-star">*</span>
+          3. Bank Balance & Saving Behavior
+        </label>
+        <div class="options">
+          <input type="radio" id="bank1" name="bank" value="15">
+          <label for="bank1">3× trip cost, consistent savings</label>
+          
+          <input type="radio" id="bank2" name="bank" value="15">
+          <label for="bank2">2× trip cost, regular transactions</label>
+          
+          <input type="radio" id="bank3" name="bank" value="15">
+          <label for="bank3">Covers trip cost + buffer</label>
+          
+          <input type="radio" id="bank4" name="bank" value="9">
+          <label for="bank4">Just enough for the trip</label>
+          
+          <input type="radio" id="bank5" name="bank" value="3">
+          <label for="bank5">Insufficient funds</label>
+        </div>
+        <div class="error-message">
+          <i class="fas fa-exclamation-circle"></i>
+          Please select your bank balance status
+        </div>
+      </div>
+
+      <div class="question" id="q4">
+        <label>
+          <span class="required-star">*</span>
+          4. Income Tax Filing History
+        </label>
+        <div class="options">
+          <input type="radio" id="tax1" name="tax" value="15">
+          <label for="tax1">ITR filed for 5+ years, CA certified</label>
+          
+          <input type="radio" id="tax2" name="tax" value="15">
+          <label for="tax2">ITR filed for last 3 years</label>
+          
+          <input type="radio" id="tax3" name="tax" value="10">
+          <label for="tax3">ITR filed for last 2 years</label>
+          
+          <input type="radio" id="tax4" name="tax" value="8">
+          <label for="tax4">ITR filed last year</label>
+          
+          <input type="radio" id="tax5" name="tax" value="4">
+          <label for="tax5">No ITR history</label>
+        </div>
+        <div class="error-message">
+          <i class="fas fa-exclamation-circle"></i>
+          Please select your tax filing history
+        </div>
+      </div>
+
+      <div class="question" id="q5">
+        <label>
+          <span class="required-star">*</span>
+          5. International Travel Experience
+        </label>
+        <div class="options">
+          <input type="radio" id="travel1" name="travel" value="15">
+          <label for="travel1">10+ countries</label>
+          
+          <input type="radio" id="travel2" name="travel" value="15">
+          <label for="travel2">5–10 countries</label>
+          
+          <input type="radio" id="travel3" name="travel" value="15">
+          <label for="travel3">2–5 countries</label>
+          
+          <input type="radio" id="travel4" name="travel" value="12">
+          <label for="travel4">1 country</label>
+          
+          <input type="radio" id="travel5" name="travel" value="8">
+          <label for="travel5">First-time traveler</label>
+        </div>
+        <div class="error-message">
+          <i class="fas fa-exclamation-circle"></i>
+          Please select your travel experience
+        </div>
+      </div>
+
+      <div class="button-container">
+        <button type="submit" class="pulse" id="submitButton">
+          <i class="fas fa-calculator"></i>
+          Calculate Visa Approval Chance
+        </button>
+      </div>
+    </form>
+    
+    <div class="footer">
+      <p><i class="fas fa-lock"></i> Your information is processed securely and not stored</p>
+    </div>
+  </div>
+
+  <div class="modal" id="resultModal">
+    <div class="modal-content">
+      <h2 class="modal-title">Visa Approval Chances</h2>
+      
+      <div class="progress-container">
+        <div class="progress-bar" id="progressBar"></div>
+      </div>
+      
+      <div class="score-display" id="scoreDisplay">0%</div>
+      
+      <div class="result-message" id="resultMessage">
+        Calculating your visa approval probability...
+      </div>
+      
+      <button class="close-button" id="closeModal">
+        <i class="fas fa-arrow-left"></i> Review Answers
+      </button>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const form = document.getElementById("eligibilityForm");
+      const modal = document.getElementById("resultModal");
+      const progressBar = document.getElementById("progressBar");
+      const scoreDisplay = document.getElementById("scoreDisplay");
+      const resultMessage = document.getElementById("resultMessage");
+      const closeModalBtn = document.getElementById("closeModal");
+      const submitButton = document.getElementById("submitButton");
+      const questions = document.querySelectorAll('.question');
+      const phoneInput = document.getElementById('phoneNumber');
+      
+      // Phone number validation
+      phoneInput.addEventListener('input', function(e) {
+        // Remove all non-digit characters
+        let value = e.target.value.replace(/\D/g, '');
+        
+        // If the number is longer than 10 digits, keep only the last 10
+        if (value.length > 10) {
+          value = value.slice(-10);
+        }
+        
+        e.target.value = value;
+      });
+
+      // Add event listeners to radio buttons for auto-scroll
+      document.querySelectorAll('input[type="radio"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+          const currentQuestion = this.closest('.question');
+          currentQuestion.classList.remove('error');
+          
+          // Auto-scroll to next question
+          const allQuestions = Array.from(questions);
+          const currentIndex = allQuestions.indexOf(currentQuestion);
+          if (currentIndex < allQuestions.length - 1) {
+            const nextQuestion = allQuestions[currentIndex + 1];
+            nextQuestion.classList.add('active');
+            
+            // Scroll to next question
+            setTimeout(() => {
+              nextQuestion.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'center',
+                inline: 'nearest'
+              });
+            }, 300);
+          }
+        });
+      });
+      
+      // Close modal button
+      closeModalBtn.addEventListener('click', function() {
+        modal.classList.remove('active');
+      });
+      
+      // Close modal when clicking outside
+      window.addEventListener('click', function(e) {
+        if (e.target === modal) modal.classList.remove('active');
+      });
+      
+      // Form submission
+      form.addEventListener("submit", async function(e) {
+        e.preventDefault();
+        
+        let allAnswered = true;
+        const maxScore = 90;
+        
+        // Reset error states
+        questions.forEach(q => {
+          q.classList.remove('error');
+          q.classList.remove('active');
+        });
+
+        // Validate name
+        const nameInput = document.getElementById('fullName');
+        if (!nameInput.value.trim()) {
+          allAnswered = false;
+          document.getElementById('q0').classList.add('error');
+        }
+
+        // Validate phone - now accepts numbers with or without country code
+        const phoneValue = phoneInput.value.replace(/\D/g, '');
+        if (phoneValue.length !== 10) {
+          allAnswered = false;
+          document.getElementById('q0-1').classList.add('error');
+        }
+        
+        // Validate each question
+        ["employment", "income", "bank", "tax", "travel"].forEach((name, index) => {
+          const selected = form.querySelector(`input[name="${name}"]:checked`);
+          if (!selected) {
+            allAnswered = false;
+            document.getElementById(`q${index + 1}`).classList.add('error');
+          }
+        });
+        
+        if (!allAnswered) {
+          const firstError = document.querySelector('.question.error');
+          if (firstError) {
+            firstError.scrollIntoView({ 
+              behavior: 'smooth', 
+              block: 'center'
+            });
+          }
+          return;
+        }
+
+        // Disable submit button and show loading state
+        submitButton.disabled = true;
+        submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+        
+        // Calculate score and prepare form data
+        let total = 0;
+        const formData = {
+          fullName: nameInput.value.trim(),
+          phoneNumber: phoneInput.value,
+          timestamp: new Date().toISOString()
+        };
+
+        // Get full text of selected options
+        ["employment", "income", "bank", "tax", "travel"].forEach((name) => {
+          const selected = form.querySelector(`input[name="${name}"]:checked`);
+          const selectedLabel = selected.nextElementSibling.textContent;
+          total += parseInt(selected.value);
+          formData[name] = selectedLabel;
+        });
+        
+        const percentage = Math.round((total / maxScore) * 100);
+        formData.score = percentage;
+        
+        try {
+          // Send data to Google Apps Script
+          const formBody = new URLSearchParams(formData).toString();
+          const response = await fetch('https://script.google.com/macros/s/AKfycbyLrbNQxhkVJB-ZjYyWMLh-AlLs5BKmcbMYW4JG67ffDw-CYHtiznhlp8RWD0BDk2FymQ/exec', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: formBody
+          });
+
+          if (!response.ok) {
+            throw new Error('Failed to save data');
+          }
+        } catch (error) {
+          console.error('Error saving data:', error);
+        }
+        
+        // Update modal content
+        scoreDisplay.textContent = `${percentage}%`;
+        
+        let message = '';
+        let resultClass = '';
+        
+        if (percentage >= 80) {
+        message = `Visa approval chance: ${percentage}%. Excellent – Very high chances.`;
+          resultClass = "excellent";
+        } else if (percentage >= 60) {
+          message = `Visa approval chance: ${percentage}%. Good – Likely eligible.`;
+          resultClass = "good";
+        } else if (percentage >= 40) {
+          message = `Visa approval chance: ${percentage}%. On track – Our Visa Expert can guide you further.`;
+          resultClass = "moderate";
+        } else {
+          message = `Visa approval chance: ${percentage}%. Let's strengthen your case – Our Visa Expert can help.`;
+          resultClass = "weak";
+        }
+        
+        resultMessage.textContent = message;
+        resultMessage.className = `result-message ${resultClass}`;
+        
+        // Show modal
+        modal.classList.add('active');
+        
+        // Animate progress bar
+        setTimeout(() => {
+          progressBar.style.width = `${percentage}%`;
+        }, 100);
+
+        // Reset submit button
+        submitButton.disabled = false;
+        submitButton.innerHTML = '<i class="fas fa-calculator"></i> Calculate Visa Approval Chance';
+      });
+    });
+  </script>
+</body>
+</html>
